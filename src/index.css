@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-[#212121] text-gray-100 font-sans antialiased;
+    margin: 0;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+@layer components {
+  .chat-prose pre {
+    @apply rounded-lg bg-gray-900 border border-gray-700 text-sm overflow-x-auto;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .chat-prose code:not(pre code) {
+    @apply bg-gray-800 text-green-400 px-1 py-0.5 rounded text-sm font-mono;
+  }
+
+  .streaming-cursor::after {
+    content: '▋';
+    @apply animate-pulse text-gray-400 ml-0.5;
+  }
+}
