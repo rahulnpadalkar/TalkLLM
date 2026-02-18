@@ -323,13 +323,11 @@ export function Sidebar({
   onDeleteFolder,
   onToggleFolder,
   onMoveConversation,
-  onImportConversation,
 }: SidebarProps) {
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
-  const [importError, setImportError] = useState<string | null>(null);
+  const [showImportComingSoon, setShowImportComingSoon] = useState(false);
   const newFolderInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isAddingFolder) newFolderInputRef.current?.focus();
@@ -342,45 +340,42 @@ export function Sidebar({
     setIsAddingFolder(false);
   };
 
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Reset so the same file can be re-imported if needed
-    e.target.value = '';
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const parsed = JSON.parse(ev.target?.result as string);
-        if (!Array.isArray(parsed)) throw new Error('Expected a JSON array.');
-        if (parsed.length === 0) throw new Error('The array is empty.');
-
-        const messages: ImportedMessage[] = parsed.map((item: unknown, i: number) => {
-          if (typeof item !== 'object' || item === null)
-            throw new Error(`Item ${i} is not an object.`);
-          const obj = item as Record<string, unknown>;
-          if (!['human', 'assistant'].includes(obj.role as string))
-            throw new Error(`Item ${i}: "role" must be "human" or "assistant".`);
-          if (typeof obj.content !== 'string')
-            throw new Error(`Item ${i}: "content" must be a string.`);
-          return { role: obj.role as 'human' | 'assistant', content: obj.content };
-        });
-
-        setImportError(null);
-        onImportConversation(messages);
-        onClose();
-      } catch (err) {
-        setImportError(err instanceof Error ? err.message : 'Invalid file.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={onClose} />
+      )}
+
+      {/* Import coming-soon dialog */}
+      {showImportComingSoon && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <Upload size={16} className="text-gray-300" />
+                </div>
+                <h2 className="text-sm font-semibold text-gray-100">Import Conversations</h2>
+              </div>
+              <button
+                onClick={() => setShowImportComingSoon(false)}
+                className="text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              We&rsquo;re working on allowing you to import conversations from ChatGPT to TalkLLM. Check back soon!
+            </p>
+            <button
+              onClick={() => setShowImportComingSoon(false)}
+              className="mt-5 w-full py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm text-gray-200 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Sidebar panel */}
@@ -399,31 +394,13 @@ export function Sidebar({
             New Chat
           </button>
 
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,application/json"
-            className="hidden"
-            onChange={handleImportFile}
-          />
           <button
-            onClick={() => { setImportError(null); fileInputRef.current?.click(); }}
+            onClick={() => setShowImportComingSoon(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors text-sm"
           >
             <Upload size={16} />
             Import Conversation
           </button>
-
-          {/* Inline error */}
-          {importError && (
-            <div className="flex items-start gap-2 bg-red-900/30 border border-red-800 rounded-lg px-3 py-2">
-              <p className="text-xs text-red-400 flex-1">{importError}</p>
-              <button onClick={() => setImportError(null)} className="text-red-500 hover:text-red-300 flex-shrink-0">
-                <X size={12} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Folder list */}
