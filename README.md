@@ -1,4 +1,4 @@
-# LLMChat
+# TalkLLM
 
 A ChatGPT-style chat interface that runs entirely in your browser. Bring your own OpenAI API key and chat with any model your account has access to — no backend, no data collection, no subscriptions.
 
@@ -23,7 +23,7 @@ A ChatGPT-style chat interface that runs entirely in your browser. Bring your ow
 
 ```bash
 git clone <repo-url>
-cd llmchat
+cd talkllm
 npm install
 npm run dev
 ```
@@ -41,7 +41,7 @@ npm run preview      # serve the built output locally
 
 ### API Key
 
-On first load you'll be prompted for your OpenAI API key. The key is validated against the OpenAI API before being saved. It's stored in `localStorage` under the key `llmchat:apiKey` and is never sent anywhere other than `api.openai.com`.
+On first load you'll be prompted for your OpenAI API key. The key is validated against the OpenAI API before being saved. It's stored in `localStorage` under the key `talkllm:apiKey` and is never sent anywhere other than `api.openai.com`.
 
 To change or remove your key, click **Change API Key** at the bottom of the sidebar.
 
