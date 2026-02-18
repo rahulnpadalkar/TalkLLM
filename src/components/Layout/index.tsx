@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import type { Conversation, ModelOption } from '../../types';
+import type { ImportedMessage } from '../../hooks/useConversations';
 import { useUsageMetrics } from '../../hooks/useUsageMetrics';
 import { useFolders } from '../../hooks/useFolders';
 import { Sidebar } from './Sidebar';
@@ -23,6 +24,7 @@ interface LayoutProps {
   createConversation: (model: string, folderId?: string) => Conversation;
   moveConversation: (conversationId: string, targetFolderId: string) => void;
   moveConversationsToFolder: (fromFolderId: string, toFolderId: string) => void;
+  onImportConversation: (messages: ImportedMessage[], folderId?: string) => void;
 }
 
 export function Layout({
@@ -42,6 +44,7 @@ export function Layout({
   createConversation,
   moveConversation,
   moveConversationsToFolder,
+  onImportConversation,
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -74,6 +77,7 @@ export function Layout({
         onDeleteFolder={handleDeleteFolder}
         onToggleFolder={toggleCollapsed}
         onMoveConversation={moveConversation}
+        onImportConversation={onImportConversation}
       />
 
       {/* Main content */}
@@ -88,7 +92,7 @@ export function Layout({
             <Menu size={20} />
           </button>
           <span className="text-sm font-medium text-gray-300">
-            {activeConversation?.title ?? 'LLMChat'}
+            {activeConversation?.title ?? 'TalkLLM'}
           </span>
         </header>
 

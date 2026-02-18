@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   SquarePen, Trash2, Key, ChevronRight, FolderPlus,
-  MoreHorizontal, FolderInput, Check, X,
+  MoreHorizontal, FolderInput, Check, X, Upload,
 } from 'lucide-react';
 import type { Conversation, Folder, ModelOption } from '../../types';
 import type { useUsageMetrics } from '../../hooks/useUsageMetrics';
+import type { ImportedMessage } from '../../hooks/useConversations';
 import { ModelSelector } from '../ModelSelector';
 import { UsagePanel } from '../UsagePanel';
 
@@ -30,6 +31,7 @@ interface SidebarProps {
   onDeleteFolder: (id: string) => void;
   onToggleFolder: (id: string) => void;
   onMoveConversation: (conversationId: string, targetFolderId: string) => void;
+  onImportConversation: (messages: ImportedMessage[], folderId?: string) => void;
 }
 
 // ─── Move-to-folder dropdown ──────────────────────────────────────────────────
@@ -321,10 +323,13 @@ export function Sidebar({
   onDeleteFolder,
   onToggleFolder,
   onMoveConversation,
+  onImportConversation,
 }: SidebarProps) {
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
   const newFolderInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isAddingFolder) newFolderInputRef.current?.focus();
@@ -335,6 +340,40 @@ export function Sidebar({
     if (name) onCreateFolder(name);
     setNewFolderName('');
     setIsAddingFolder(false);
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset so the same file can be re-imported if needed
+    e.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (!Array.isArray(parsed)) throw new Error('Expected a JSON array.');
+        if (parsed.length === 0) throw new Error('The array is empty.');
+
+        const messages: ImportedMessage[] = parsed.map((item: unknown, i: number) => {
+          if (typeof item !== 'object' || item === null)
+            throw new Error(`Item ${i} is not an object.`);
+          const obj = item as Record<string, unknown>;
+          if (!['human', 'assistant'].includes(obj.role as string))
+            throw new Error(`Item ${i}: "role" must be "human" or "assistant".`);
+          if (typeof obj.content !== 'string')
+            throw new Error(`Item ${i}: "content" must be a string.`);
+          return { role: obj.role as 'human' | 'assistant', content: obj.content };
+        });
+
+        setImportError(null);
+        onImportConversation(messages);
+        onClose();
+      } catch (err) {
+        setImportError(err instanceof Error ? err.message : 'Invalid file.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -350,8 +389,8 @@ export function Sidebar({
         lg:relative lg:translate-x-0 lg:z-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* New Chat button */}
-        <div className="p-3 border-b border-gray-800">
+        {/* New Chat + Import buttons */}
+        <div className="p-3 border-b border-gray-800 space-y-1">
           <button
             onClick={() => { onNewChat('default'); onClose(); }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-gray-100 transition-colors text-sm"
@@ -359,6 +398,32 @@ export function Sidebar({
             <SquarePen size={16} />
             New Chat
           </button>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+          <button
+            onClick={() => { setImportError(null); fileInputRef.current?.click(); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors text-sm"
+          >
+            <Upload size={16} />
+            Import Conversation
+          </button>
+
+          {/* Inline error */}
+          {importError && (
+            <div className="flex items-start gap-2 bg-red-900/30 border border-red-800 rounded-lg px-3 py-2">
+              <p className="text-xs text-red-400 flex-1">{importError}</p>
+              <button onClick={() => setImportError(null)} className="text-red-500 hover:text-red-300 flex-shrink-0">
+                <X size={12} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Folder list */}

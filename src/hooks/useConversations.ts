@@ -7,11 +7,17 @@ import {
   setActiveConversationId,
 } from '../utils/storage';
 
+export interface ImportedMessage {
+  role: 'human' | 'assistant';
+  content: string;
+}
+
 interface UseConversationsReturn {
   conversations: Conversation[];
   activeConversationId: string | null;
   activeConversation: Conversation | undefined;
   createConversation: (model: string, folderId?: string) => Conversation;
+  importConversation: (messages: ImportedMessage[], model: string, folderId?: string) => void;
   selectConversation: (id: string) => void;
   deleteConversation: (id: string) => void;
   updateConversation: (id: string, updates: Partial<Omit<Conversation, 'id' | 'createdAt'>>) => void;
@@ -84,6 +90,37 @@ export function useConversations(): UseConversationsReturn {
     [persist]
   );
 
+  const importConversation = useCallback((
+    importedMessages: ImportedMessage[],
+    model: string,
+    folderId = 'default'
+  ) => {
+    const now = Date.now();
+    const messages: Message[] = importedMessages.map((m, i) => ({
+      id: crypto.randomUUID(),
+      role: m.role === 'human' ? 'user' : 'assistant',
+      content: m.content,
+      createdAt: now + i,
+    }));
+    const firstUserMsg = importedMessages.find((m) => m.role === 'human')?.content ?? 'Imported Chat';
+    const newConv: Conversation = {
+      id: crypto.randomUUID(),
+      title: firstUserMsg.slice(0, 50).replace(/\n/g, ' '),
+      messages,
+      model,
+      folderId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setConversations((prev) => {
+      const updated = [newConv, ...prev];
+      persist(updated);
+      return updated;
+    });
+    setActiveConversationIdState(newConv.id);
+    setActiveConversationId(newConv.id);
+  }, [persist]);
+
   const moveConversation = useCallback((conversationId: string, targetFolderId: string) => {
     setConversations((prev) => {
       const updated = prev.map((c) =>
@@ -118,6 +155,7 @@ export function useConversations(): UseConversationsReturn {
     activeConversationId,
     activeConversation,
     createConversation,
+    importConversation,
     selectConversation,
     deleteConversation,
     updateConversation,

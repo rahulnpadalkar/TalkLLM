@@ -1,11 +1,11 @@
 import type { Conversation, Folder } from '../types';
 
 const KEYS = {
-  API_KEY: 'llmchat:apiKey',
-  SELECTED_MODEL: 'llmchat:selectedModel',
-  CONVERSATIONS: 'llmchat:conversations',
-  ACTIVE_CONVERSATION: 'llmchat:activeConversationId',
-  FOLDERS: 'llmchat:folders',
+  API_KEY: 'talkllm:apiKey',
+  SELECTED_MODEL: 'talkllm:selectedModel',
+  CONVERSATIONS: 'talkllm:conversations',
+  ACTIVE_CONVERSATION: 'talkllm:activeConversationId',
+  FOLDERS: 'talkllm:folders',
 } as const;
 
 const DEFAULT_FOLDER: Folder = {

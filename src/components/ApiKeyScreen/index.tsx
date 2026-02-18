@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Eye, EyeOff, Key } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { useState } from "react";
+import { Eye, EyeOff, Key, Lock, Github } from "lucide-react";
+import { Spinner } from "../ui/Spinner";
 
 interface ApiKeyScreenProps {
   onKeySaved: () => void;
@@ -15,7 +15,7 @@ export function ApiKeyScreen({
   isValidating,
   validationError,
 }: ApiKeyScreenProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showKey, setShowKey] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export function ApiKeyScreen({
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-800 mb-4">
             <Key size={28} className="text-gray-300" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-100">LLMChat</h1>
+          <h1 className="text-2xl font-semibold text-gray-100">TalkLLM</h1>
           <p className="text-gray-400 mt-2 text-sm">
             Enter your OpenAI API key to start chatting
           </p>
@@ -47,7 +47,7 @@ export function ApiKeyScreen({
               </label>
               <div className="relative">
                 <input
-                  type={showKey ? 'text' : 'password'}
+                  type={showKey ? "text" : "password"}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="sk-..."
@@ -80,25 +80,59 @@ export function ApiKeyScreen({
                   Validating…
                 </>
               ) : (
-                'Save & Continue'
+                "Save & Continue"
               )}
             </button>
           </form>
         </div>
 
-        {/* Help text */}
-        <p className="text-center text-xs text-gray-500 mt-4">
-          Your key is stored only in your browser's localStorage and never sent to any server
-          other than OpenAI.{' '}
-          <a
-            href="https://platform.openai.com/api-keys"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-gray-300 underline"
-          >
-            Get a key →
-          </a>
-        </p>
+        {/* Trust callouts */}
+        <div className="mt-4 space-y-2">
+          <div className="flex items-start gap-2.5 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3">
+            <Lock size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Your key is stored only in your browser's localStorage and sent
+              exclusively to{" "}
+              <span className="text-gray-300">api.openai.com</span>. No backend,
+              no tracking.{" "}
+              <a
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white underline underline-offset-2"
+              >
+                Get a key →
+              </a>
+            </p>
+          </div>
+
+          <div className="flex items-start gap-2.5 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3">
+            <Github size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-400 leading-relaxed">
+              TalkLLM is{" "}
+              <a
+                href="https://github.com/rahulnpadalkar/TalkLLM"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white underline underline-offset-2"
+              >
+                open source
+              </a>
+              . Anyone can read the code and verify exactly what it does with
+              your key. The codebase has also been{" "}
+              <a
+                href="https://claude.ai/share/e9c5f811-6c24-47cf-a4b4-47dccbcc80ef"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white underline underline-offset-2"
+              >
+                audited by Claude
+              </a>{" "}
+              — you can read through the full session to see exactly how it was
+              built and reviewed.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useApiKey } from './hooks/useApiKey';
 import { useModels } from './hooks/useModels';
-import { useConversations } from './hooks/useConversations';
+import { useConversations, type ImportedMessage } from './hooks/useConversations';
 import { ApiKeyScreen } from './components/ApiKeyScreen';
 import { Layout } from './components/Layout';
 
@@ -12,6 +12,7 @@ export default function App() {
     activeConversationId,
     activeConversation,
     createConversation,
+    importConversation,
     selectConversation,
     deleteConversation,
     updateConversation,
@@ -48,6 +49,9 @@ export default function App() {
       createConversation={createConversation}
       moveConversation={moveConversation}
       moveConversationsToFolder={moveConversationsToFolder}
+      onImportConversation={(msgs: ImportedMessage[], folderId?: string) =>
+        importConversation(msgs, selectedModel, folderId)
+      }
     />
   );
 }
